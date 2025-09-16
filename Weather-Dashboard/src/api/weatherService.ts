@@ -1,9 +1,10 @@
-import client from "./client";
+import { API_KEY, API_URL } from "../config";
+import { apiClient } from "./client";
 
-export const WeatherService = {
-  getCurrent: (city: string) =>
-    client.get("/weather", { params: { q: city } }),
+export async function getCurrentWeather(city: string) {
+  return apiClient(`${API_URL}/weather?q=${city}&units=metric&appid=${API_KEY}`);
+}
 
-  getForecast: (city: string) =>
-    client.get("/forecast", { params: { q: city } }),
-};
+export async function getForecast(city: string) {
+  return apiClient(`${API_URL}/forecast?q=${city}&units=metric&appid=${API_KEY}`);
+}
