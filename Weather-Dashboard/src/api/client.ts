@@ -1,25 +1,15 @@
-import axios from "axios";
+export async function apiClient(endpoint: string, options: RequestInit = {}) {
+  const res = await fetch(endpoint, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    ...options,
+  });
 
-const client = axios.create({
-  baseURL: "https://api.openweathermap.org/data/2.5",
-  timeout: 10000,
-});
-
-client.interceptors.request.use(
-  (config) => {
-    const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
-    config.params = { ...config.params, appid: apiKey, units: "metric" };
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-client.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    console.error("API error:", error);
-    return Promise.reject(error);
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || "API Error");
   }
-);
 
-export default client;
+  return res.json();
+}
