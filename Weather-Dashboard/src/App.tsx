@@ -6,6 +6,10 @@ import ForecastCard from "./components/ForecastCard";
 import ErrorMessage from "./components/ErrorMessage";
 import { getCurrentWeather, getForecast } from "./services/weatherService";
 import { saveToCache, getFromCache } from "./utils/cache";
+import { Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import NotFound from "./pages/NotFound";
 
 export default function App() {
   const [city, setCity] = useState<string | null>(null);
@@ -54,12 +58,16 @@ export default function App() {
   );
 
   return (
-    <main className="min-h-screen py-8 px-4">
-      <header className="max-w-4xl mx-auto">
-        <h1 className="text-center text-3xl font-bold text-white mb-6">
-          🌦 Weather Dashboard
-        </h1>
+    <main className="min-h-screen py-8 px-4 bg-gradient-to-br from-blue-500 to-indigo-700">
+      <header className="max-w-4xl mx-auto mb-6">
+        <h1 className="text-center text-3xl font-bold text-white">🌦 Weather Dashboard</h1>
       </header>
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
 
       <SearchBar onSearch={onSearch} />
 
