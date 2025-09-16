@@ -11,11 +11,12 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchWeather = async (city: string) => {
-    setLoading(true);
-    setError(null);
-    setWeather(null);
-    setForecast([]);
+ const fetchWeather = async (city: string) => {
+  const response = await fetch(
+    `${API_URL}/weather?q=${city}&appid=${API_KEY}&units=metric`
+  );
+  return response.json();
+};
 
     try {
       // Current weather
