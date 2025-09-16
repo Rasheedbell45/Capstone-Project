@@ -1,40 +1,25 @@
-import React, { createContext, useReducer, ReactNode } from "react";
+import { createContext, useState, ReactNode } from "react";
 
-type State = {
+interface WeatherContextType {
   favorites: string[];
-};
-
-type Action =
-  | { type: "ADD_FAVORITE"; city: string }
-  | { type: "REMOVE_FAVORITE"; city: string };
-
-const initialState: State = { favorites: [] };
-
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case "ADD_FAVORITE":
-      if (state.favorites.includes(action.city)) return state;
-      return { ...state, favorites: [...state.favorites, action.city] };
-    case "REMOVE_FAVORITE":
-      return {
-        ...state,
-        favorites: state.favorites.filter((c) => c !== action.city),
-      };
-    default:
-      return state;
-  }
+  addFavorite: (city: string) => void;
+  removeFavorite: (city: string) => void;
 }
 
-export const WeatherContext = createContext<{
-  state: State;
-  dispatch: React.Dispatch<Action>;
-}>({ state: initialState, dispatch: () => {} });
+export const WeatherContext = createContext<WeatherContextType | null>(null);
 
-export const WeatherProvider = ({ children }: { children: ReactNode }) => {
-  const [state, dispatch] = useReducer(reducer, initialState);
+export function WeatherProvider({ children }: { children: ReactNode }) {
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+  const addFavorite = (city: string) =>
+    setFavorites((prev) => [...new Set([...prev, city])]);
+
+  const removeFavorite = (city: string) =>
+    setFavorites((prev) => prev.filter((c) => c !== city));
+
   return (
-    <WeatherContext.Provider value={{ state, dispatch }}>
+    <WeatherContext.Provider value={{ favorites, addFavorite, removeFavorite }}>
       {children}
     </WeatherContext.Provider>
   );
-};
+}
