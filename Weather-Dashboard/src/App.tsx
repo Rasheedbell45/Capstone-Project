@@ -1,65 +1,89 @@
-import { useState } from "react";
+import React, { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import SearchBar from "./components/SearchBar";
 import WeatherCard from "./components/WeatherCard";
 import ForecastCard from "./components/ForecastCard";
 import ErrorMessage from "./components/ErrorMessage";
-import { API_KEY, API_URL } from "./config";
+import { getCurrentWeather, getForecast } from "./services/weatherService";
+import { saveToCache, getFromCache } from "./utils/cache";
 
 export default function App() {
-  const [weather, setWeather] = useState<any | null>(null);
-  const [forecast, setForecast] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [city, setCity] = useState<string | null>(null);
 
- const fetchWeather = async (city: string) => {
-  const response = await fetch(
-    `${API_URL}/weather?q=${city}&appid=${API_KEY}&units=metric`
-  );
-  return response.json();
-};
+  const onSearch = useCallback((c: string) => {
+    setCity(c);
+  }, []);
 
-    try {
-      // Current weather
-      const res = await fetch(
-        `${API_URL}/weather?q=${city}&units=metric&appid=${API_KEY}`
-      );
-      if (!res.ok) throw new Error("City not found");
-      const data = await res.json();
-      setWeather(data);
+  const cacheKey = city ? `weather:${city.toLowerCase()}` : null;
 
-      // Forecast (5-day / 3-hour interval)
-      const forecastRes = await fetch(
-        `${API_URL}/forecast?q=${city}&units=metric&appid=${API_KEY}`
-      );
-      const forecastData = await forecastRes.json();
-      // Pick one forecast per day (every 8th item ~ 24 hrs)
-      const daily = forecastData.list.filter((_: any, i: number) => i % 8 === 0);
-      setForecast(daily);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+  const {
+    data: weather,
+    error: weatherError,
+    isLoading: weatherLoading,
+  } = useQuery(
+    ["weather", city],
+    async () => {
+      if (!city) throw new Error("No city provided");
+      const cached = cacheKey ? getFromCache(cacheKey) : null;
+      if (cached) return cached;
+      const res = await getCurrentWeather(city);
+      if (cacheKey) saveToCache(cacheKey, res);
+      return res;
+    },
+    {
+      enabled: !!city,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      cacheTime: 1000 * 60 * 60, // 1 hour
+      retry: 1,
     }
-  };
+  );
+
+  const {
+    data: forecastData,
+    isLoading: forecastLoading,
+    error: forecastError,
+  } = useQuery(
+    ["forecast", city],
+    async () => {
+      if (!city) return null;
+      const res = await getForecast(city);
+      const daily = res.list.filter((_: any, i: number) => i % 8 === 0);
+      return daily;
+    },
+    { enabled: !!city, staleTime: 1000 * 60 * 30 }
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 to-blue-600 text-white flex flex-col items-center">
-      <h1 className="text-3xl font-bold p-6">🌦 Weather Dashboard</h1>
-      <SearchBar onSearch={fetchWeather} />
+    <main className="min-h-screen py-8 px-4">
+      <header className="max-w-4xl mx-auto">
+        <h1 className="text-center text-3xl font-bold text-white mb-6">
+          🌦 Weather Dashboard
+        </h1>
+      </header>
 
-      {loading && <p className="mt-4">Loading...</p>}
+      <SearchBar onSearch={onSearch} />
 
-      {error && <ErrorMessage message={error} />}
+      <section className="max-w-4xl mx-auto mt-6">
+        {weatherLoading && <p className="text-center text-white">Loading weather...</p>}
+        {weatherError && (
+          <ErrorMessage message={(weatherError as Error).message || "Error fetching weather"} />
+        )}
 
-      {weather && <WeatherCard data={weather} />}
+        {weather && <WeatherCard data={weather} />}
 
-      {forecast.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 w-full max-w-4xl">
-          {forecast.map((f, i) => (
-            <ForecastCard key={i} data={f} />
-          ))}
-        </div>
-      )}
-    </div>
+        {forecastLoading && <p className="text-center text-white">Loading forecast...</p>}
+        {forecastData && (
+          <section className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 px-2">
+            {forecastData.map((f: any, i: number) => (
+              <ForecastCard key={i} data={f} />
+            ))}
+          </section>
+        )}
+
+        {!city && (
+          <p className="text-center text-white mt-8">Search for a city to see the current weather and forecast.</p>
+        )}
+      </section>
+    </main>
   );
 }
