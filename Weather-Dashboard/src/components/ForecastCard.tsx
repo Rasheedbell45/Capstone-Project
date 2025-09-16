@@ -1,21 +1,21 @@
-interface Props {
-  data: any;
+interface ForecastCardProps {
+data: any;
 }
 
-export default function ForecastCard({ data }: Props) {
-  const date = new Date(data.dt_txt).toLocaleDateString("en-US", {
-    weekday: "short",
-  });
 
-  return (
-    <div className="bg-white text-black rounded-lg shadow p-4 text-center">
-      <p className="font-semibold">{date}</p>
-      <img
-        src={`https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`}
-        alt="Weather Icon"
-        className="mx-auto"
-      />
-      <p className="text-lg">{Math.round(data.main.temp)}°C</p>
-    </div>
-  );
+export default function ForecastCard({ data }: ForecastCardProps) {
+const date = new Date(data.dt * 1000);
+return (
+<div className="bg-white/20 backdrop-blur-lg rounded-xl shadow p-4 text-white text-center">
+<p className="font-semibold">
+{date.toLocaleDateString(undefined, { weekday: "short" })}
+</p>
+<img
+src={`https://openweathermap.org/img/wn/${data.weather[0].icon}.png`}
+alt={data.weather[0].description}
+className="mx-auto"
+/>
+<p className="text-lg font-bold">{Math.round(data.main.temp)}°C</p>
+</div>
+);
 }
