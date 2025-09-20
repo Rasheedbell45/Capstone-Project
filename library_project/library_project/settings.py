@@ -1,8 +1,14 @@
+from pathlib import Path
+import os
+
+# Base directory of the project
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 INSTALLED_APPS = [
     ...,
-    'rest_framework',
-    'rest_framework.authtoken',
-    'library',
+    "rest_framework",
+    "rest_framework.authtoken",
+    "library",
 ]
 
 REST_FRAMEWORK = {
@@ -23,5 +29,5 @@ MIDDLEWARE = [
     ...
 ]
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
