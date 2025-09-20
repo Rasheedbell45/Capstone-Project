@@ -5,10 +5,19 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 INSTALLED_APPS = [
-    ...,
-    "rest_framework",
-    "rest_framework.authtoken",
-    "library",
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+
+    # Third-party
+    'rest_framework',
+    'rest_framework.authtoken',
+
+    # Local
+    'library',
 ]
 
 REST_FRAMEWORK = {
