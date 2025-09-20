@@ -4,12 +4,12 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
-  build: {
-    outDir: "dist",   // Vercel will use this folder
-    sourcemap: true,
-  },
   server: {
     port: 5173,
-    open: true,
+    open: true
   },
+  build: {
+    outDir: "dist",
+    sourcemap: true
+  }
 });
