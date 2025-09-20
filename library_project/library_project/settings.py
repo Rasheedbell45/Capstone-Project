@@ -4,6 +4,17 @@ import os
 # Base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Security
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable not set!")
+
+# Debug mode (default is False in production)
+DEBUG = os.getenv("DEBUG", "False") == "True"
+
+# Hosts allowed to serve this project
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".onrender.com"]
+
 ROOT_URLCONF = "library_project.urls"
 
 INSTALLED_APPS = [
