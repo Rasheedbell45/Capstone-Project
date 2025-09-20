@@ -15,7 +15,7 @@ services:
         value: library_project.settings
 
       - key: DJANGO_SUPERUSER_USERNAME
-        value: rasheedbello45
+        value: rasheedbell45
 
       - key: DJANGO_SUPERUSER_EMAIL
         value: rasheedbello45@gmail.com
