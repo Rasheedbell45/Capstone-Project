@@ -25,3 +25,7 @@ services:
 
       - key: SECRET_KEY
         generateValue: true
+
+    releaseCommand: >
+      python manage.py migrate &&
+      python manage.py createsu
