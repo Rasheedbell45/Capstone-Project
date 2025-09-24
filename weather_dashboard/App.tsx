@@ -13,6 +13,7 @@ import ErrorMessage from "./components/ErrorMessage";
 
 import { getCurrentWeather, getForecast } from "./api/weatherApi";
 import { saveToCache, getFromCache } from "./utils/cache";
+import type { Weather, ForecastItem } from "./types/weather";
 
 export default function App() {
   const queryClient = new QueryClient();
@@ -20,12 +21,12 @@ export default function App() {
   const onSearch = useCallback((c: string) => setCity(c), []);
   const cacheKey = city ? `weather:${city.toLowerCase()}` : null;
 
-  const { data: weather, error: weatherError, isLoading: weatherLoading } = useQuery(
+  const { data: weather, error: weatherError, isLoading: weatherLoading } = useQuery<Weather, Error>(
     ["weather", city],
     async () => {
-      if (!city) throw new Error("No city");
+      if (!city) throw new Error("No city provided");
       const cached = cacheKey ? getFromCache(cacheKey) : null;
-      if (cached) return cached;
+      if (cached) return cached as Weather;
       const res = await getCurrentWeather(city);
       if (cacheKey) saveToCache(cacheKey, res);
       return res;
@@ -33,12 +34,12 @@ export default function App() {
     { enabled: !!city, staleTime: 1000 * 60 * 5 }
   );
 
-  const { data: forecastData, isLoading: forecastLoading } = useQuery(
+  const { data: forecastData, isLoading: forecastLoading } = useQuery<ForecastItem[], Error>(
     ["forecast", city],
     async () => {
-      if (!city) return null;
+      if (!city) return [];
       const res = await getForecast(city);
-      return res.list.filter((_: any, i: number) => i % 8 === 0);
+      return res.list.filter((_: ForecastItem, i: number) => i % 8 === 0);
     },
     { enabled: !!city, staleTime: 1000 * 60 * 30 }
   );
@@ -54,12 +55,13 @@ export default function App() {
 
         <section className="max-w-4xl mx-auto mt-6">
           {weatherLoading && <p className="text-center">Loading weather...</p>}
-          {weatherError && <ErrorMessage message={(weatherError as Error).message} />}
+          {weatherError && <ErrorMessage message={weatherError.message} />}
           {weather && <WeatherCard data={weather} />}
 
-          {forecastData && (
+          {forecastLoading && <p className="text-center">Loading forecast...</p>}
+          {forecastData && forecastData.length > 0 && (
             <section className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 px-2">
-              {forecastData.map((f: any, i: number) => <ForecastCard key={i} data={f} />)}
+              {forecastData.map((f, i) => <ForecastCard key={i} data={f} />)}
             </section>
           )}
 
