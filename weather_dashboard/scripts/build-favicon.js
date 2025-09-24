@@ -3,41 +3,36 @@ import fs from "fs";
 import path from "path";
 
 const inputSvg = path.resolve("public/favicon.svg");
-const outputIco = path.resolve("public/favicon.ico");
+const outputDir = path.resolve("public");
 
-async function generateFavicon() {
+async function generateFavicons() {
   try {
     if (!fs.existsSync(inputSvg)) {
-      throw new Error("favicon.svg not found in /public");
+      throw new Error("❌ favicon.svg not found in /public");
     }
 
-    // Generate multiple sizes for ICO
-    const sizes = [16, 32, 48, 64];
-    const pngBuffers = await Promise.all(
+    // Sizes for PNG + ICO
+    const sizes = [16, 32, 48, 64, 128, 192, 256, 512];
+
+    // Generate PNGs
+    await Promise.all(
       sizes.map((size) =>
         sharp(inputSvg)
           .resize(size, size)
-          .png()
-          .toBuffer()
+          .toFile(path.join(outputDir, `favicon-${size}x${size}.png`))
       )
     );
 
-    // Save as ICO (multi-resolution)
-    await sharp({
-      create: {
-        width: 64,
-        height: 64,
-        channels: 4,
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
-      },
-    })
-      .joinChannel(pngBuffers[0]) // base layer
-      .toFile(outputIco);
+    // Generate favicon.ico (multi-size)
+    await sharp(inputSvg)
+      .resize(256, 256)
+      .toFormat("ico", { sizes: [16, 32, 48, 64, 128, 256] })
+      .toFile(path.join(outputDir, "favicon.ico"));
 
-    console.log("✅ Favicon generated at public/favicon.ico");
+    console.log("✅ Favicons + app icons generated successfully in /public");
   } catch (err) {
-    console.error("❌ Error generating favicon:", err);
+    console.error("❌ Error generating favicons:", err);
   }
 }
 
-generateFavicon();
+generateFavicons();
