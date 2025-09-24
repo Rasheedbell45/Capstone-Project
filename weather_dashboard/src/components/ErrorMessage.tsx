@@ -1,10 +1,15 @@
 import React from "react";
 
-export default function ErrorMessage({ message }: { message?: string }) {
-  if (!message) return null;
+interface ErrorMessageProps {
+  message: string;
+}
+
+const ErrorMessage: React.FC<ErrorMessageProps> = ({ message }) => {
   return (
-    <div className="max-w-4xl mx-auto mt-4 bg-red-50 border border-red-200 text-red-700 p-3 rounded-md">
+    <div className="max-w-4xl mx-auto bg-red-100 text-red-700 p-4 rounded-lg mb-4 shadow-md text-center">
       {message}
     </div>
   );
-}
+};
+
+export default ErrorMessage;
