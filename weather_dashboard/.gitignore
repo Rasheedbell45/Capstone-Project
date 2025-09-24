@@ -16,7 +16,6 @@ pnpm-debug.log*
 .idea/
 .DS_Store
 
-# Env files (keep your API keys safe!)
 .env
 .env.local
 .env.*.local
