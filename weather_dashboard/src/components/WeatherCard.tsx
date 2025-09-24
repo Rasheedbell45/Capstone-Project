@@ -1,43 +1,26 @@
 import React from "react";
+import type { Weather } from "../types/weather";
 
-type WeatherData = {
-  name: string;
-  main: { temp: number; feels_like: number; humidity: number; temp_min: number; temp_max: number };
-  weather: { main: string; description: string; icon: string }[];
-  wind: { speed: number };
-  sys?: { country?: string };
-};
+interface WeatherCardProps {
+  data: Weather;
+}
 
-export default function WeatherCard({ data }: { data: WeatherData }) {
-  if (!data) return null;
-
-  const icon = data.weather?.[0]?.icon;
-  const iconUrl = icon ? `https://openweathermap.org/img/wn/${icon}@2x.png` : null;
+const WeatherCard: React.FC<WeatherCardProps> = ({ data }) => {
+  const iconUrl = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
 
   return (
-    <div className="max-w-4xl mx-auto mt-6 bg-white/90 rounded-xl p-6 shadow">
-      <div className="flex items-center gap-6">
-        <div>
-          <div className="text-3xl font-bold text-gray-800">
-            {data.name} {data.sys?.country ? `, ${data.sys.country}` : ""}
-          </div>
-          <div className="text-sm text-gray-600 capitalize">{data.weather?.[0]?.description}</div>
-        </div>
-
-        {iconUrl && <img src={iconUrl} alt={data.weather?.[0]?.description} className="w-24 h-24" />}
-
-        <div className="ml-auto text-right">
-          <div className="text-4xl font-bold text-gray-900">{Math.round(data.main.temp)}°C</div>
-          <div className="text-sm text-gray-600">Feels like {Math.round(data.main.feels_like)}°C</div>
-        </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-gray-700">
-        <div>Humidity: {data.main.humidity}%</div>
-        <div>Wind: {data.wind?.speed ?? "—"} m/s</div>
-        <div>Min: {Math.round(data.main.temp_min)}°C</div>
-        <div>Max: {Math.round(data.main.temp_max)}°C</div>
+    <div className="bg-white text-black rounded-2xl shadow-lg p-6 flex flex-col items-center max-w-md mx-auto">
+      <h2 className="text-2xl font-bold mb-2">{data.name}, {data.sys.country}</h2>
+      <img src={iconUrl} alt={data.weather[0].description} className="w-24 h-24" />
+      <p className="text-xl font-semibold">{Math.round(data.main.temp)}°C</p>
+      <p className="capitalize">{data.weather[0].description}</p>
+      <div className="mt-4 flex justify-between w-full text-sm text-gray-700">
+        <span>Humidity: {data.main.humidity}%</span>
+        <span>Wind: {data.wind.speed} m/s</span>
+        <span>Pressure: {data.main.pressure} hPa</span>
       </div>
     </div>
   );
-}
+};
+
+export default WeatherCard;
