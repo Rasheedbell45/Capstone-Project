@@ -1,36 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, FormEvent } from "react";
 
-interface Props {
+interface SearchBarProps {
   onSearch: (city: string) => void;
 }
 
-export default function SearchBar({ onSearch }: Props) {
-  const [value, setValue] = useState("");
+const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
+  const [input, setInput] = useState("");
 
-  const submit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const v = value.trim();
-    if (!v) return;
-    onSearch(v);
+    if (input.trim() === "") return;
+    onSearch(input.trim());
+    setInput("");
   };
 
   return (
-    <form onSubmit={submit} className="max-w-4xl mx-auto px-4">
-      <div className="flex gap-2">
-        <input
-          aria-label="City"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          className="flex-1 px-4 py-3 rounded-md shadow focus:outline-none"
-          placeholder="Search city (e.g. London)"
-        />
-        <button
-          type="submit"
-          className="px-4 py-3 bg-white text-blue-600 rounded-md font-semibold shadow hover:opacity-90"
-        >
-          Search
-        </button>
-      </div>
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-4xl mx-auto flex items-center gap-2 p-4 bg-white rounded-2xl shadow-md"
+    >
+      <input
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="Search for a city..."
+        className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        required
+      />
+      <button
+        type="submit"
+        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+      >
+        Search
+      </button>
     </form>
   );
-}
+};
+
+export default SearchBar;
