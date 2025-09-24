@@ -1,4 +1,5 @@
 const CACHE_NAME = 'weather-dashboard-v1';
+const API_CACHE_NAME = 'weather-api-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -16,19 +17,18 @@ const ASSETS_TO_CACHE = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
   self.skipWaiting();
 });
 
+// Activate event - cleanup old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
+          if (key !== CACHE_NAME && key !== API_CACHE_NAME) return caches.delete(key);
         })
       )
     )
@@ -36,22 +36,38 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Fetch event - serve API and static assets from cache
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request)
-        .then((response) => {
-          return caches.open(CACHE_NAME).then((cache) => {
-            // Cache a copy of the response
-            cache.put(event.request, response.clone());
-            return response;
+  const { request } = event;
+
+  // Only handle GET requests
+  if (request.method !== 'GET') return;
+
+  const url = new URL(request.url);
+
+  // Handle API requests differently
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(
+      caches.open(API_CACHE_NAME).then(async (cache) => {
+        try {
+          const response = await fetch(request);
+          cache.put(request, response.clone());
+          return response;
+        } catch (err) {
+          const cachedResponse = await cache.match(request);
+          if (cachedResponse) return cachedResponse;
+          return new Response(JSON.stringify({ error: 'Offline and no cached data' }), {
+            status: 503,
+            headers: { 'Content-Type': 'application/json' },
           });
-        })
-        .catch(() => {
-          // Optional fallback for offline
-          return caches.match('/');
-        });
-    })
+        }
+      })
+    );
+    return;
+  }
+
+  // Handle static assets
+  event.respondWith(
+    caches.match(request).then((cached) => cached || fetch(request))
   );
 });
