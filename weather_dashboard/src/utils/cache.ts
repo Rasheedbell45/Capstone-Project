@@ -1,22 +1,14 @@
-export const saveToCache = (key: string, data: any) => {
-  try {
-    localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }));
-  } catch {
-    // ignore
-  }
+type CacheData = any;
+const cacheStore: Record<string, CacheData> = {};
+
+export const saveToCache = (key: string, data: CacheData) => {
+  cacheStore[key] = data;
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
 };
 
-export const getFromCache = (key: string, maxAgeMs = 1000 * 60 * 60) => {
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (parsed.ts && Date.now() - parsed.ts > maxAgeMs) {
-      localStorage.removeItem(key);
-      return null;
-    }
-    return parsed.data;
-  } catch {
-    return null;
-  }
+export const getFromCache = (key: string): CacheData | null => {
+  const cached = cacheStore[key];
+  if (cached) return cached;
+  const stored = localStorage.getItem(key);
+  return stored ? JSON.parse(stored) : null;
 };
