@@ -11,7 +11,7 @@ import WeatherCard from "./components/WeatherCard";
 import ForecastCard from "./components/ForecastCard";
 import ErrorMessage from "./components/ErrorMessage";
 
-import { getCurrentWeather, getForecast } from "./api/weatherApi";
+import { fetchCurrentWeather, fetchForecast } from "./services/weatherService";
 import { saveToCache, getFromCache } from "./utils/cache";
 import type { Weather, ForecastItem } from "./types/weather";
 
@@ -27,7 +27,7 @@ export default function App() {
       if (!city) throw new Error("No city provided");
       const cached = cacheKey ? getFromCache(cacheKey) : null;
       if (cached) return cached as Weather;
-      const res = await getCurrentWeather(city);
+      const res = await fetchCurrentWeather(city);
       if (cacheKey) saveToCache(cacheKey, res);
       return res;
     },
@@ -38,7 +38,7 @@ export default function App() {
     ["forecast", city],
     async () => {
       if (!city) return [];
-      const res = await getForecast(city);
+      const res = await fetchForecast(city);
       return res.list.filter((_: ForecastItem, i: number) => i % 8 === 0);
     },
     { enabled: !!city, staleTime: 1000 * 60 * 30 }
