@@ -1,14 +1,11 @@
-import { getCurrentWeatherRaw, getForecastRaw } from "../api/weatherApi";
+import { getCurrentWeather, getForecast } from "../api/weatherApi";
 
-export async function getCurrentWeather(city: string) {
-  const res = await getCurrentWeatherRaw(city);
-  // return res.data for full object
-  return res.data;
+export async function fetchCurrentWeather(city: string) {
+  const res = await getCurrentWeather(city);
+  return res; // already returns the weather object
 }
 
-export async function getForecast(city: string) {
-  const res = await getForecastRaw(city);
-  // OpenWeatherMap forecast has list of 3-hour entries.
-  // We'll return the raw list — UI will pick daily entries if needed.
-  return res.data;
+export async function fetchForecast(city: string) {
+  const res = await getForecast(city);
+  return res; // already returns the forecast object
 }
