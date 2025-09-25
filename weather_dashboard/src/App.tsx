@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { Routes, Route } from "react-router-dom";
-import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -16,7 +16,6 @@ import { saveToCache, getFromCache } from "./utils/cache";
 import type { Weather, ForecastItem } from "./types/weather";
 
 export default function App() {
-  const queryClient = new QueryClient();
   const [city, setCity] = useState<string | null>(null);
   const onSearch = useCallback((c: string) => setCity(c), []);
   const cacheKey = city ? `weather:${city.toLowerCase()}` : null;
@@ -45,35 +44,35 @@ export default function App() {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <main className="min-h-screen py-8 px-4 bg-gradient-to-br from-blue-500 to-indigo-700 text-white">
-        <header className="max-w-4xl mx-auto mb-6 text-center">
-          <h1 className="text-3xl font-bold">🌦 Weather Dashboard</h1>
-        </header>
+    <main className="min-h-screen py-8 px-4 bg-gradient-to-br from-blue-500 to-indigo-700 text-white">
+      <header className="max-w-4xl mx-auto mb-6 text-center">
+        <h1 className="text-3xl font-bold">🌦 Weather Dashboard</h1>
+      </header>
 
-        <SearchBar onSearch={onSearch} />
+      <SearchBar onSearch={onSearch} />
 
-        <section className="max-w-4xl mx-auto mt-6">
-          {weatherLoading && <p className="text-center">Loading weather...</p>}
-          {weatherError && <ErrorMessage message={weatherError.message} />}
-          {weather && <WeatherCard data={weather} />}
+      <section className="max-w-4xl mx-auto mt-6">
+        {weatherLoading && <p className="text-center">Loading weather...</p>}
+        {weatherError && <ErrorMessage message={weatherError.message} />}
+        {weather && <WeatherCard data={weather} />}
 
-          {forecastLoading && <p className="text-center">Loading forecast...</p>}
-          {forecastData && forecastData.length > 0 && (
-            <section className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 px-2">
-              {forecastData.map((f, i) => <ForecastCard key={i} data={f} />)}
-            </section>
-          )}
+        {forecastLoading && <p className="text-center">Loading forecast...</p>}
+        {forecastData && forecastData.length > 0 && (
+          <section className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 px-2">
+            {forecastData.map((f, i) => (
+              <ForecastCard key={i} data={f} />
+            ))}
+          </section>
+        )}
 
-          {!city && <p className="text-center mt-8">Search for a city to see weather.</p>}
-        </section>
+        {!city && <p className="text-center mt-8">Search for a city to see weather.</p>}
+      </section>
 
-        <Routes>
-          <Route index element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-    </QueryClientProvider>
+      <Routes>
+        <Route index element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </main>
   );
 }
