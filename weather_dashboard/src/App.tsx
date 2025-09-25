@@ -27,7 +27,7 @@ export default function App() {
       if (!city) throw new Error("No city provided");
       const cached = cacheKey ? getFromCache(cacheKey) : null;
       if (cached) return cached as Weather;
-      const res = await fetchCurrentWeather(city);
+      const res = await getCurrentWeather(city);
       if (cacheKey) saveToCache(cacheKey, res);
       return res;
     },
@@ -38,7 +38,7 @@ export default function App() {
     ["forecast", city],
     async () => {
       if (!city) return [];
-      const res = await fetchForecast(city);
+      const res = await getForecast(city);
       return res.list.filter((_: ForecastItem, i: number) => i % 8 === 0);
     },
     { enabled: !!city, staleTime: 1000 * 60 * 30 }
