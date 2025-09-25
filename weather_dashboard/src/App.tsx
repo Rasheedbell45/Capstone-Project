@@ -11,7 +11,7 @@ import WeatherCard from "./components/WeatherCard";
 import ForecastCard from "./components/ForecastCard";
 import ErrorMessage from "./components/ErrorMessage";
 
-import { fetchCurrentWeather, fetchForecast } from "./services/weatherService";
+import { getCurrentWeather, getForecast } from "./services/weatherService";
 import { saveToCache, getFromCache } from "./utils/cache";
 import type { Weather, ForecastItem } from "./types/weather";
 
