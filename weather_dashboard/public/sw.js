@@ -1,34 +1,34 @@
 const CACHE_NAME = 'weather-dashboard-v1';
 const API_CACHE_NAME = 'weather-api-v1';
+const OFFLINE_URL = '/offline.html';
+
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/favicon.ico',
   '/manifest.json',
-  '/src/main.tsx',
-  '/src/components/SearchBar.tsx',
-  '/src/components/WeatherCard.tsx',
-  '/src/components/ForecastCard.tsx',
-  '/src/components/ErrorMessage.tsx',
-  '/src/pages/Home.tsx',
-  '/src/pages/About.tsx',
-  '/src/pages/NotFound.tsx',
+  '/favicon.ico',
+  OFFLINE_URL,
 ];
 
+// INSTALL - pre-cache app shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
   );
   self.skipWaiting();
 });
 
-// Activate event - cleanup old caches
+// ACTIVATE - clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME && key !== API_CACHE_NAME) return caches.delete(key);
+          if (key !== CACHE_NAME && key !== API_CACHE_NAME) {
+            return caches.delete(key);
+          }
         })
       )
     )
@@ -36,16 +36,16 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - serve API and static assets from cache
+// FETCH - serve assets and APIs
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
-  // Only handle GET requests
+  // Handle only GET requests
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
 
-  // Handle API requests differently
+  // Network-first for APIs
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       caches.open(API_CACHE_NAME).then(async (cache) => {
@@ -53,21 +53,27 @@ self.addEventListener('fetch', (event) => {
           const response = await fetch(request);
           cache.put(request, response.clone());
           return response;
-        } catch (err) {
-          const cachedResponse = await cache.match(request);
-          if (cachedResponse) return cachedResponse;
-          return new Response(JSON.stringify({ error: 'Offline and no cached data' }), {
-            status: 503,
-            headers: { 'Content-Type': 'application/json' },
-          });
+        } catch (error) {
+          const cached = await cache.match(request);
+          return (
+            cached ||
+            new Response(JSON.stringify({ error: 'Offline and no cached data' }), {
+              status: 503,
+              headers: { 'Content-Type': 'application/json' },
+            })
+          );
         }
       })
     );
     return;
   }
 
-  // Handle static assets
+  // Cache-first for static assets
   event.respondWith(
-    caches.match(request).then((cached) => cached || fetch(request))
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) return cachedResponse;
+
+      return fetch(request).catch(() => caches.match(OFFLINE_URL));
+    })
   );
 });
