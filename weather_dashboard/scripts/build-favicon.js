@@ -8,7 +8,7 @@ const outputDir = path.resolve("public");
 async function generateFavicons() {
   try {
     if (!fs.existsSync(inputSvg)) {
-      throw new Error("❌ favicon.svg not found in /public");
+      throw new Error("favicon.svg not found in /public");
     }
 
     // Sizes for PNG + ICO
@@ -29,9 +29,9 @@ async function generateFavicons() {
       .toFormat("ico", { sizes: [16, 32, 48, 64, 128, 256] })
       .toFile(path.join(outputDir, "favicon.ico"));
 
-    console.log("✅ Favicons + app icons generated successfully in /public");
+    console.log("Favicons + app icons generated successfully in /public");
   } catch (err) {
-    console.error("❌ Error generating favicons:", err);
+    console.error("Error generating favicons:", err);
   }
 }
 
