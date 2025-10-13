@@ -16,6 +16,13 @@
       "src": "/favicon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+
+    {
+      "scope": "/",
+      "orientation": "portrait",
+      "prefer_related_applications": false,
+      "categories": ["weather", "utilities", "productivity"]
     }
   ]
 }
