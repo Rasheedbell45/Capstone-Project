@@ -13,9 +13,13 @@ export default function Home() {
 
   const onSearch = useCallback((c: string) => setCity(c), []);
 
-  const { data: weatherData, isLoading: weatherLoading, error: weatherError } = useQuery(
-    ["weather", city],
-    async () => {
+  const {
+    data: weatherData,
+    isLoading: weatherLoading,
+    error: weatherError,
+  } = useQuery({
+    queryKey: ["weather", city],
+    queryFn: async () => {
       if (!city) throw new Error("No city provided");
       const cached = cacheKey ? getFromCache(cacheKey) : null;
       if (cached?.weather) return cached.weather;
@@ -23,19 +27,24 @@ export default function Home() {
       if (cacheKey) saveToCache(cacheKey, { weather: data });
       return data;
     },
-    { enabled: !!city, staleTime: 1000 * 60 * 5 }
-  );
+    enabled: !!city,
+    staleTime: 1000 * 60 * 5,
+  });
 
-  const { data: forecastData, isLoading: forecastLoading } = useQuery(
-    ["forecast", city],
-    async () => {
+  // ✅ Fixed forecast useQuery (v5 syntax)
+  const {
+    data: forecastData,
+    isLoading: forecastLoading,
+  } = useQuery({
+    queryKey: ["forecast", city],
+    queryFn: async () => {
       if (!city) return null;
       const res = await getForecast(city);
-      // select daily at 12:00 or every 8th item (approx daily)
       return res.list.filter((_: any, i: number) => i % 8 === 0);
     },
-    { enabled: !!city, staleTime: 1000 * 60 * 30 }
-  );
+    enabled: !!city,
+    staleTime: 1000 * 60 * 30,
+  });
 
   return (
     <main className="py-8 px-4">
@@ -52,14 +61,13 @@ export default function Home() {
         {weatherData && <WeatherCard data={weatherData} />}
       </div>
 
-      {forecastLoading && <p className="text-white text-center mt-4">Loading forecast...</p>}
       {forecastData && (
-        <section className="max-w-4xl mx-auto mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 px-2">
-          {forecastData.map((f: any, i: number) => (
-            <ForecastCard key={i} item={f} />
-          ))}
-        </section>
-      )}
+  <section className="max-w-4xl mx-auto mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 px-2">
+    {forecastData.map((f: any, i: number) => (
+      <ForecastCard key={i} data={f} />
+    ))}
+  </section>
+)}
     </main>
   );
 }
