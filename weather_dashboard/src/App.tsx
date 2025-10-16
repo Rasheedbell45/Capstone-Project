@@ -20,28 +20,43 @@ export default function App() {
   const onSearch = useCallback((c: string) => setCity(c), []);
   const cacheKey = city ? `weather:${city.toLowerCase()}` : null;
 
-  const { data: weather, error: weatherError, isLoading: weatherLoading } = useQuery<Weather, Error>(
-    ["weather", city],
-    async () => {
+  // Fetch current weather
+  const {
+    data: weather,
+    error: weatherError,
+    isLoading: weatherLoading,
+  } = useQuery<Weather, Error>({
+    queryKey: ["weather", city],
+    queryFn: async () => {
       if (!city) throw new Error("No city provided");
+
       const cached = cacheKey ? getFromCache(cacheKey) : null;
       if (cached) return cached as Weather;
+
       const res = await getCurrentWeather(city);
       if (cacheKey) saveToCache(cacheKey, res);
       return res;
     },
-    { enabled: !!city, staleTime: 1000 * 60 * 5 }
-  );
+    enabled: !!city,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-  const { data: forecastData, isLoading: forecastLoading } = useQuery<ForecastItem[], Error>(
-    ["forecast", city],
-    async () => {
+  // Fetch forecast
+  const {
+    data: forecastData,
+    isLoading: forecastLoading,
+  } = useQuery<ForecastItem[], Error>({
+    queryKey: ["forecast", city],
+    queryFn: async () => {
       if (!city) return [];
       const res = await getForecast(city);
-      return res.list.filter((_: ForecastItem, i: number) => i % 8 === 0);
+
+      // Ensure TypeScript knows each item is a ForecastItem
+      return (res.list as ForecastItem[]).filter((_, i) => i % 8 === 0);
     },
-    { enabled: !!city, staleTime: 1000 * 60 * 30 }
-  );
+    enabled: !!city,
+    staleTime: 1000 * 60 * 30, // 30 minutes
+  });
 
   return (
     <main className="min-h-screen py-8 px-4 bg-gradient-to-br from-blue-500 to-indigo-700 text-white">
@@ -59,8 +74,8 @@ export default function App() {
         {forecastLoading && <p className="text-center">Loading forecast...</p>}
         {forecastData && forecastData.length > 0 && (
           <section className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 px-2">
-            {forecastData.map((f, i) => (
-              <ForecastCard key={i} data={f} />
+            {forecastData.map((forecast: ForecastItem, index: number) => (
+              <ForecastCard key={index} data={forecast} />
             ))}
           </section>
         )}
