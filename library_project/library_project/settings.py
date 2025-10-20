@@ -1,15 +1,15 @@
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
-# Base directory of the project
+load_dotenv()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Security
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY environment variable not set!")
 
-# Debug mode (default is False in production)
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
 # Hosts allowed to serve this project
@@ -54,6 +54,23 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+# Templates configuration (required for Admin and general HTML rendering)
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],  # you can put custom HTML files here
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    },
 ]
 
 STATIC_URL = "/static/"
