@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: capstone-project
+    env: python
+    plan: free
+
+    buildCommand: >
+      pip install -r requirements.txt &&
+      python manage.py collectstatic --noinput
+
+    startCommand: gunicorn library_project.wsgi:application
+
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: library_project.settings
+
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: rasheedbell45
+
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: rasheedbello45@gmail.com
+
+      - key: DJANGO_SUPERUSER_PASSWORD
+        value: Ayokanmi@1994
+
+      - key: SECRET_KEY
+        generateValue: true
+
+    releaseCommand: >
+      python manage.py migrate &&
+      python manage.py createsu
