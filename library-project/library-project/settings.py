@@ -15,7 +15,7 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 # Hosts allowed to serve this project
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".onrender.com"]
 
-ROOT_URLCONF = "library_project.urls"
+ROOT_URLCONF = "library-project.urls"
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -58,3 +58,4 @@ MIDDLEWARE = [
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
