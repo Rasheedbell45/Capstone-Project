@@ -8,11 +8,11 @@ services:
       pip install -r requirements.txt &&
       python manage.py collectstatic --noinput
 
-    startCommand: gunicorn library_project.wsgi:application
+    startCommand: gunicorn library-project.wsgi:application
 
     envVars:
       - key: DJANGO_SETTINGS_MODULE
-        value: library_project.settings
+        value: library-project.settings
 
       - key: DJANGO_SUPERUSER_USERNAME
         value: rasheedbell45
@@ -29,3 +29,4 @@ services:
     releaseCommand: >
       python manage.py migrate &&
       python manage.py createsu
+
